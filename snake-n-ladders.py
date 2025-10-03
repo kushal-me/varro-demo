@@ -1,0 +1,71 @@
+import tkinter as tk
+import random
+
+# Snakes and ladders mapping
+snakes = {16: 6, 47: 26, 49: 11, 56: 53, 62: 19, 64: 60, 87: 24, 93: 73, 95: 75, 98: 78}
+ladders = {1: 38, 4: 14, 9: 31, 21: 42, 28: 84, 36: 44, 51: 67, 71: 91, 80: 100}
+
+positions = [0, 0]
+current_player = 0
+
+# GUI setup
+root = tk.Tk()
+root.title("Snake and Ladders")
+
+canvas = tk.Canvas(root, width=600, height=600)
+canvas.pack()
+
+# Draw board
+cell_size = 60
+for i in range(10):
+    for j in range(10):
+        x = j * cell_size
+        y = (9 - i) * cell_size
+        num = i * 10 + (j + 1 if i % 2 == 0 else 10 - j)
+        canvas.create_rectangle(x, y, x + cell_size, y + cell_size, fill="white")
+        canvas.create_text(x + 30, y + 30, text=str(num))
+
+# Player tokens
+tokens = [canvas.create_oval(5, 5, 25, 25, fill="red"),
+          canvas.create_oval(35, 5, 55, 25, fill="blue")]
+
+def get_coords(pos):
+    if pos == 0:
+        return (5, 5)
+    row = (pos - 1) // 10
+    col = (pos - 1) % 10
+    if row % 2 == 1:
+        col = 9 - col
+    x = col * cell_size + 5
+    y = (9 - row) * cell_size + 5
+    return (x, y)
+
+def move_player():
+    global current_player
+    roll = random.randint(1, 6)
+    msg.set(f"Player {current_player + 1} rolled a {roll}")
+    positions[current_player] += roll
+    if positions[current_player] > 100:
+        positions[current_player] -= roll
+    pos = positions[current_player]
+    if pos in snakes:
+        msg.set(f"Oops! Snake at {pos}")
+        pos = snakes[pos]
+    elif pos in ladders:
+        msg.set(f"Yay! Ladder at {pos}")
+        pos = ladders[pos]
+    positions[current_player] = pos
+    x, y = get_coords(pos)
+    canvas.coords(tokens[current_player], x, y, x + 20, y + 20)
+    if pos == 100:
+        msg.set(f"🎉 Player {current_player + 1} wins!")
+        roll_btn.config(state="disabled")
+    else:
+        current_player = 1 - current_player
+
+msg = tk.StringVar()
+tk.Label(root, textvariable=msg, font=("Arial", 14)).pack()
+roll_btn = tk.Button(root, text="Roll Dice", command=move_player, font=("Arial", 14))
+roll_btn.pack()
+
+root.mainloop()
